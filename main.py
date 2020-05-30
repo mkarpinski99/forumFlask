@@ -15,7 +15,7 @@ DB_NAME = "Forum.db"
 
 def create_database(con):
     for file in ["Uzytkownik.sql", "Kategoria.sql", "Watek.sql", "Post.sql"]:
-        with open(f"Templates/sql/{file}") as f:
+        with open(f"templates/sql/{file}") as f:
             print(file)
             database = f.read()
             con.execute(database)
@@ -59,10 +59,14 @@ app.config["SECRET_KEY"] = secret_key
 app.secret_key = secret_key
 
 
-@app.route('/')
-def hello_world():
-    return 'Hello World!'
 
+@app.route('/')
+def index():
+    return render_template('html/base.html')
+
+@app.route('/login')
+def login():
+    return render_template('html/login.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
