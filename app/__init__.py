@@ -15,6 +15,7 @@ migrate = Migrate(app, db)
 
 from app import routes, models
 
+
 # x = models.Thread(subject="flask nie działa", date=date.today(), visits=0, category=1)
 # db.session.add(x)
 # db.session.commit()

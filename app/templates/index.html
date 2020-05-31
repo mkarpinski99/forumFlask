@@ -4,6 +4,24 @@
     {% if current_user.username %}
     <h1>Witaj, {{ current_user.username }}!</h1>
     {% endif %}
+    {% if current_user.type == 'Administrator' %}
+        <form action="" method="post">
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.category(cols=32, rows=1) }}<br>
+            {% for error in form.category.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.details(cols=32, rows=4) }}<br>
+            {% for error in form.details.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>{{ form.submit() }}</p>
+    </form>
+    {% endif %}
     {% for category in categories %}
     <p>
         <a href="{{ url_for('thread', id=category.id) }}" class="navbar-item">

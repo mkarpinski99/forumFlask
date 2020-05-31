@@ -1,16 +1,22 @@
 from app import app, db
-from app.forms import LoginForm, RegistrationForm, PostForm
+from app.forms import LoginForm, RegistrationForm, PostForm, ThreadForm, CategoryForm
 from flask import render_template, flash, redirect, url_for
 from flask_login import current_user, login_user, logout_user
 from app.models import User, Post, Category, Thread
+from datetime import date, datetime
 
 
-@app.route('/', methods=['GET'])
+@app.route('/', methods=['GET', 'POST'])
 def index():
+    form = CategoryForm()
+    if form.validate_on_submit():
+        category = Category(name=form.category.data, details=form.details.data)
+        db.session.add(category)
+        db.session.commit()
+        flash('Category created successfully')
+        return redirect(url_for('index'))
     categories = db.session.query(Category)
-    for category in categories:
-        print(category.details)
-    return render_template("index.html", title='ForumFlask', categories=categories)
+    return render_template("index.html", title='ForumFlask', categories=categories, form=form)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -47,9 +53,29 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 
-@app.route('/thread/<id>')
+@app.route('/thread/<id>', methods=['GET', 'POST'])
 def thread(id):
+    form = ThreadForm()
+    if current_user.is_authenticated & form.validate_on_submit():
+        thread = Thread(subject=form.thread.data, date=date.today(), category=id)
+        db.session.add(thread)
+        db.session.commit()
+        flash('Thread created successfully!')
+        return redirect(url_for('post', id=thread.id))
     threads = db.session.query(Thread).filter_by(category=id)
+    return render_template('threads.html', threads=threads, form=form)
 
-    return render_template('threads.html', threads=threads)
+
+@app.route('/post/<id>', methods=['GET', 'POST'])
+def post(id):
+    form = PostForm()
+    if form.validate_on_submit():
+        post = Post(content=form.post.data, user=current_user.id, date=datetime.now(), thread=id)
+        db.session.add(post)
+        db.session.commit()
+        flash('Your post is now live!')
+        return redirect(url_for('post', id=id))
+    # posts = db.session.query(Post.id, Post.content, Post.date, User.username).filter_by(thread=id).group_by(Post.id)
+    posts = db.session.query(Post, User).filter(Post.thread == id).join(User, User.id==Post.user)
+    return render_template('post.html', posts=posts, form=form)
 

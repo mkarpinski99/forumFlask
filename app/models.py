@@ -32,7 +32,7 @@ class Category(db.Model):
 
 
 class Thread(db.Model):
-    __tablename__ = 'forumThread'
+    __tablename__ = 'thread'
     id = db.Column(db.Integer, primary_key=True)
     subject = db.Column(db.String, nullable=False)
     visits = db.Column(db.Integer, default=0)
@@ -44,7 +44,7 @@ class Thread(db.Model):
 
 
 class Post(db.Model):
-    __tablename__ = 'thread'
+    __tablename__ = 'post'
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.String, nullable=True)
     date = db.Column(db.DateTime, nullable=False)

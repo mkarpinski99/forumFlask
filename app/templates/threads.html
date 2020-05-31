@@ -1,12 +1,21 @@
 {% extends "base.html" %}
 
 {% block content %}
-    {% if current_user.username %}
-    <h1>Witaj, {{ current_user.username }}!</h1>
+    {% if current_user.type == 'Administrator'  %}
     {% endif %}
+    <form action="" method="post">
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.thread(cols=32, rows=4) }}<br>
+            {% for error in form.thread.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>{{ form.submit() }}</p>
+    </form>
     {% for thread in threads %}
     <p>
-        <a href="{{ url_for('index') }}" class="navbar-item">
+        <a href="{{ url_for('post', id=thread.id) }}" class="navbar-item">
             {{ thread.subject }}
         </a>
     </p>
