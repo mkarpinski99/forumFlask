@@ -1,5 +1,5 @@
 from app import app, db
-from app.forms import LoginForm, RegistrationForm, PostForm, ThreadForm, CategoryForm
+from app.forms import LoginForm, RegistrationForm, PostForm, ThreadForm, CategoryForm, EditPostForm
 from flask import render_template, flash, redirect, url_for
 from flask_login import current_user, login_user, logout_user
 from app.models import User, Post, Category, Thread
@@ -69,6 +69,7 @@ def thread(id):
 @app.route('/post/<id>', methods=['GET', 'POST'])
 def post(id):
     form = PostForm()
+    editForm = EditPostForm()
     if form.validate_on_submit():
         post = Post(content=form.post.data, user=current_user.id, date=datetime.now(), thread=id)
         db.session.add(post)
@@ -77,5 +78,46 @@ def post(id):
         return redirect(url_for('post', id=id))
     # posts = db.session.query(Post.id, Post.content, Post.date, User.username).filter_by(thread=id).group_by(Post.id)
     posts = db.session.query(Post, User).filter(Post.thread == id).join(User, User.id==Post.user)
-    return render_template('post.html', posts=posts, form=form)
+    db.session.query(Thread).filter(Thread.id == id).update({'visits': Thread.visits + 1})
+    db.session.commit()
+    return render_template('post.html', posts=posts, form=form, editForm=editForm)
 
+
+@app.route('/delete_post<id>', methods=['POST'])
+def delete_post(id):
+    post = db.session.query(Post).filter(Post.id == id).first()
+    thread = post.thread
+    if current_user.type != 'Uzytkownik' or current_user.id == post.user:
+        db.session.delete(post)
+        db.session.commit()
+        flash('Post deleted!')
+        return redirect(url_for('post', id=thread))
+    flash('Chicen face, something went wrong!')
+    return redirect(url_for('post', id=thread))
+
+
+@app.route('/delete_thread<id>', methods=['POST'])
+def delete_thread(id):
+    thread = db.session.query(Thread).filter(Thread.id == id).first()
+    category = thread.category
+    if current_user.type != 'Uzytkownik':
+        db.session.delete(thread)
+        db.session.commit()
+        flash('Thread deleted!')
+        return redirect(url_for('thread', id=category))
+    flash('Chicen face, something went wrong!')
+    return redirect(url_for('thread', id=category))
+
+
+@app.route('/update_post<id>', methods=['POST'])
+def update_post(id):
+    post = db.session.query(Post).filter(Post.id == id).first()
+    thread = post.thread
+    form = EditPostForm()
+    if current_user.type != 'Uzytkownik' or current_user.id == post.user:
+        db.session.query(Post).filter(Post.id == id).update({'content': form.post.data})
+        db.session.commit()
+        flash('Post updated!')
+        return redirect(url_for('post', id=thread))
+    flash('Chicen face, something went wrong!')
+    return redirect(url_for('post', id=thread))

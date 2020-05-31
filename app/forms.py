@@ -30,6 +30,12 @@ class PostForm(FlaskForm):
     submit = SubmitField('Submit')
 
 
+class EditPostForm(FlaskForm):
+    post = TextAreaField('Say something', validators=[
+        DataRequired(), Length(min=1, max=500)], render_kw={"placeholder": "Edit post here"})
+    submit = SubmitField('Edit')
+
+
 class CategoryForm(FlaskForm):
     category = TextAreaField('New category', validators=[
         DataRequired(), Length(min=1, max=30)], render_kw={"placeholder": "New category"})
